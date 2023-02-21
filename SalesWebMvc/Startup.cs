@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SalesWebMVC.Data;
 using SalesWebMVC.Services;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 namespace SalesWebMVC
 {
@@ -51,6 +53,16 @@ namespace SalesWebMVC
         // Chamando o Send do service seedingService para popular meu banco caso eu esteja no env de desenvolvimento
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, SeedingService seedingService)
         {
+            // definindo EUA como locale padrão
+            var enUS = new CultureInfo("en-US");
+            var localizationOptions = new RequestLocalizationOptions { 
+                DefaultRequestCulture = new RequestCulture(enUS),
+                SupportedCultures = new List<CultureInfo> { enUS },
+                SupportedUICultures = new List<CultureInfo> { enUS }
+            };
+
+            app.UseRequestLocalization(localizationOptions); 
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
