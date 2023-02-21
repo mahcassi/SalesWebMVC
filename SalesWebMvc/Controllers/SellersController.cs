@@ -59,7 +59,7 @@ namespace SalesWebMVC.Controllers
 
             if (id == null || obj == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id not found"} );
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
             return View(obj);
@@ -69,8 +69,14 @@ namespace SalesWebMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _sellerService.RemoveAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            } catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -132,11 +138,11 @@ namespace SalesWebMVC.Controllers
 
         public IActionResult Error(string message)
         {
-            var viewModel = new ErrorViewModel 
-            { 
-                Message = message, 
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
                 // macete para pegar o id interno da requisição
-                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier 
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
             };
 
             return View(viewModel);
