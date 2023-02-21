@@ -22,16 +22,16 @@ namespace SalesWebMVC.Controllers
             _departmentService = departmentService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var list = _sellerService.FindAll();
+            var list = await _sellerService.FindAllAsync();
             return View(list);
         }
 
         // abre o formulario para cadastrar um novo vendedor
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var departaments = _departmentService.FindAll();
+            var departaments = await _departmentService.FindAllAsync();
             var viewModel = new SellerFormViewModel { Departments = departaments };
             return View(viewModel);
         }
@@ -39,23 +39,23 @@ namespace SalesWebMVC.Controllers
         // realiza o cadastramento do vendedor
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Seller seller)
+        public async Task<IActionResult> Create(Seller seller)
         {
             // fazendo validação de campos na controller, caso o user desabilite o js
             if (!ModelState.IsValid)
             {
-                var departaments = _departmentService.FindAll();
+                var departaments = await _departmentService.FindAllAsync();
                 var viewModel = new SellerFormViewModel { Seller = seller, Departments = departaments };
                 return View(viewModel);
             }
 
-            _sellerService.Insert(seller);
+            await _sellerService.InsertAsync(seller);
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
 
             if (id == null || obj == null)
             {
@@ -67,16 +67,16 @@ namespace SalesWebMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _sellerService.Remove(id);
+            await _sellerService.RemoveAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
 
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
 
             if (id == null || obj == null)
             {
@@ -86,16 +86,16 @@ namespace SalesWebMVC.Controllers
             return View(obj);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
 
             if (id == null || obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
-            List<Department> departments = _departmentService.FindAll();
+            List<Department> departments = await _departmentService.FindAllAsync();
             // carregando as info do vendedor e a lista de departamentos
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
 
@@ -104,12 +104,12 @@ namespace SalesWebMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Seller seller)
+        public async Task<IActionResult> Edit(int id, Seller seller)
         {
             // fazendo validação de campos na controller, caso o user desabilite o js
             if (!ModelState.IsValid)
             {
-                var departaments = _departmentService.FindAll();
+                var departaments = await _departmentService.FindAllAsync();
                 var viewModel = new SellerFormViewModel { Seller = seller, Departments = departaments };
                 return View(viewModel);
             }
@@ -121,7 +121,7 @@ namespace SalesWebMVC.Controllers
 
             try
             {
-                _sellerService.Update(seller);
+                await _sellerService.UpdateAsync(seller);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException e)
