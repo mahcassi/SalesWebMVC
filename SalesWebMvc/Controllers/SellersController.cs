@@ -5,6 +5,7 @@ using SalesWebMVC.Services;
 using SalesWebMVC.Services.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace SalesWebMVC.Controllers
         private readonly SellerService _sellerService;
         private readonly DepartmentService _departmentService;
 
-        public SellersController(SellerService sellerService, DepartmentService departmentService) 
+        public SellersController(SellerService sellerService, DepartmentService departmentService)
         {
             _sellerService = sellerService;
             _departmentService = departmentService;
@@ -50,12 +51,12 @@ namespace SalesWebMVC.Controllers
 
             if (id == null || obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found"} );
             }
 
             return View(obj);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)
@@ -71,7 +72,7 @@ namespace SalesWebMVC.Controllers
 
             if (id == null || obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
             return View(obj);
@@ -83,7 +84,7 @@ namespace SalesWebMVC.Controllers
 
             if (id == null || obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
             List<Department> departments = _departmentService.FindAll();
@@ -99,20 +100,31 @@ namespace SalesWebMVC.Controllers
         {
             if (id != seller.Id)
             {
-                return BadRequest();
+                return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
             }
 
             try
             {
                 _sellerService.Update(seller);
                 return RedirectToAction(nameof(Index));
-            } catch (NotFoundException)
-            {
-                return NotFound();
-            } catch (DbConcurrencyException)
-            {
-                return BadRequest();
             }
+            catch (ApplicationException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel 
+            { 
+                Message = message, 
+                // macete para pegar o id interno da requisição
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier 
+            };
+
+            return View(viewModel);
+
         }
     }
 }
